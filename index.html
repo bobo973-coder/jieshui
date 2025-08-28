@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家庭节税计算器</title>
+    <style>
+        :root {
+            /* 现代简约色彩方案 */
+            --primary-color: #4A90E2; /* 柔和蓝色 */
+            --primary-hover: #3A7BC8;
+            --secondary-color: #F5F7FA; /* 极浅灰蓝 */
+            --background-color: #FFFFFF; /* 纯白背景 */
+            --surface-color: #FFFFFF; /* 卡片表面 */
+            --border-color: #E1E5EB; /* 柔和边框 */
+            --text-primary: #2D3748; /* 主要文字 */
+            --text-secondary: #718096; /* 次要文字 */
+            --text-disabled: #A0AEC0;
+            --success-color: #48BB78; /* 成功/节税 */
+            --warning-color: #ED8936; /* 警告 */
+            --error-color: #E53E3E; /* 错误 */
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --border-radius: 10px;
+            --transition: all 0.2s ease-in-out;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 20px auto;
+            background-color: var(--surface-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--primary-color);
+            color: var(--background-color);
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .navbar .title {
+            font-size: 18px;
+        }
+
+        .navbar .icon {
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .navbar .icon:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 内容区域 */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--secondary-color);
+        }
+
+        /* 底部导航栏 */
+        .tabbar {
+            display: flex;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--surface-color);
+        }
+
+        .tabbar-item {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tabbar-item.active {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .tabbar-item .icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        /* 弹窗 */
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: var(--surface-color);
+            width: 90%;
+            max-width: 500px;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+            box-shadow: var(--shadow-md);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 24px;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            max-height: 60vh;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+
+        .modal-body h3 {
+            margin: 15px 0 8px 0;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .modal-body p {
+            margin-bottom: 10px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background-color: var(--primary-color);
+            color: var(--background-color);
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .modal-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* 表单样式 */
+        .form-section {
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background-color: var(--surface-color);
+            transition: var(--transition);
+        }
+
+        .form-section-title {
+            font-size: 15px;
+            font-weight: 500;
+            padding: 15px 20px;
+            background-color: var(--surface-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .form-section-title:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .form-section-title .icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .form-section-title .arrow {
+            transition: transform 0.3s ease;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .form-section-title.collapsed .arrow {
+            transform: rotate(180deg);
+        }
+
+        .form-section-content {
+            padding: 0 20px 20px 20px;
+            display: none;
+        }
+
+        .form-section.expanded .form-section-content {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: var(--surface-color);
+            transition: var(--transition);
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .form-input.error {
+            border-color: var(--error-color);
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%23718096" d="M6 8.8L1.2 4 2.8 2.4 6 5.6 9.2 2.4 10.8 4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 8px;
+            accent-color: var(--primary-color);
+        }
+
+        .checkbox-item label {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        /* 列表项 */
+        .list-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-item:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .list-item-title {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .list-item-value {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .list-item-arrow::after {
+            content: '>';
+            color: var(--text-disabled);
+            margin-left: 5px;
+            font-size: 16px;
+        }
+
+        /* 隐藏未激活的页面 */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* 按钮 */
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--background-color);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 15px;
+            font-weight: 500;
+            margin-top: 20px;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:disabled {
+            background-color: var(--text-disabled);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* 结果展示 */
+        .result-card {
+            background-color: var(--surface-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .result-title {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .result-value {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .family-result-card {
+            background-color: var(--surface-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .family-result-title {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .member-result {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+
+        .member-info {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+        }
+
+        .member-name {
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .member-info div {
+            font-size: 13px;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        .husband .member-name { color: var(--primary-color); }
+        .wife .member-name { color: var(--warning-color); }
+
+        .total-tax {
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .savings-card {
+            background-color: var(--surface-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--success-color);
+            text-align: center;
+        }
+
+        .savings-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .savings-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--success-color);
+        }
+
+        /* 专项附加扣除分配 */
+        .deduction-assign {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .deduction-label {
+            flex: 1;
+            min-width: 150px;
+            margin-right: 10px;
+        }
+
+        .deduction-select {
+            width: 140px;
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+
+        .deduction-input {
+            width: 100px;
+            margin-bottom: 5px;
+        }
+
+        .split-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            width: 100%;
+            margin-top: 5px;
+            padding-left: 30px; /* 与 checkbox 对齐 */
+        }
+
+        /* 咨询顾问模块 */
+        .consultant-section {
+            background-color: var(--surface-color);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 25px 20px;
+            text-align: center;
+            margin-top: 30px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .consultant-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .consultant-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .consultant-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .consult-btn {
+            background-color: var(--primary-color);
+            color: var(--background-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .consult-btn:hover {
+            background-color: var(--primary-hover);
+            box-shadow: var(--shadow-md);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 顶部导航栏 -->
+    <div class="navbar">
+        <div class="icon" onclick="toggleModal('knowledgeModal')">&#9776;</div> <!-- 菜单图标 -->
+        <div class="title">家庭节税计算器</div>
+        <div class="icon" onclick="toggleModal('knowledgeModal')">&#63;</div> <!-- 问号图标 -->
+    </div>
+
+    <!-- 内容区域 -->
+    <div class="content">
+        <!-- 知识介绍弹窗 -->
+        <div id="knowledgeModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">家庭个税知识小课堂</div>
+                    <div class="modal-close" onclick="closeModal('knowledgeModal')">&times;</div>
+                </div>
+                <div class="modal-body">
+                    <h3>什么是个人所得税？</h3>
+                    <p>个人所得税（简称个税）是国家对本国公民、居住在本国境内的个人的所得和境外个人来源于本国的所得征收的一种所得税。</p>
+                    
+                    <h3>专项附加扣除有哪些？</h3>
+                    <p>包括子女教育、继续教育、大病医疗、住房贷款利息、住房租金、赡养老人、3岁以下婴幼儿照护等七项。</p>
+                    
+                    <h3>家庭如何分配扣除？</h3>
+                    <p><strong>夫妻可协商分配：</strong>子女教育、住房贷款利息、赡养老人、3岁以下婴幼儿照护可由夫妻双方约定由其中一方或双方按比例扣除。<br>
+                    <strong>夫妻分别扣除：</strong>继续教育、大病医疗、住房租金由符合条件的本人扣除。<br>
+                    合理分配可以优化家庭整体税负。</p>
+                    
+                    <h3>个人养老金是什么？</h3>
+                    <p>个人养老金是政府政策支持、个人自愿参加、市场化运营的补充养老保险制度。参加人每年可享受12000元的税收优惠额度。</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn" onclick="closeModal('knowledgeModal')">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 首页 - 信息输入与计算结果 -->
+        <div id="homePage" class="page active">
+            <form>
+                <!-- 先生信息 -->
+                <div class="form-section" id="husbandSection">
+                    <div class="form-section-title collapsed" onclick="toggleSection('husbandSection')">
+                        <div>
+                            <span class="icon">&#128104;</span>
+                            <span>先生信息</span>
+                        </div>
+                        <span class="arrow">&#9660;</span>
+                    </div>
+                    <div class="form-section-content">
+                         <div class="form-group">
+                            <label class="form-label">月收入 (税前, 元)</label>
+                            <input type="number" class="form-input" id="husbandIncome" placeholder="请输入税前月收入" value="20000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">年终奖 (元, 可选)</label>
+                            <input type="number" class="form-input" placeholder="请输入年终奖金额" value="30000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">所在城市类型</label>
+                            <select class="form-select">
+                                <option value="other">其他城市</option>
+                                <option value="tier2" selected>二线城市</option>
+                                <option value="tier1">一线城市 (北上广深)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">个人缴纳社保比例 (%)</label>
+                            <input type="number" class="form-input" value="10.5" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">个人缴纳公积金比例 (%)</label>
+                            <input type="number" class="form-input" value="12" readonly>
+                        </div>
+                         <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="hasCommercialInsurance-husband">
+                                <label for="hasCommercialInsurance-husband">我有符合条件的商业健康保险</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 太太信息 -->
+                <div class="form-section" id="wifeSection">
+                    <div class="form-section-title collapsed" onclick="toggleSection('wifeSection')">
+                        <div>
+                            <span class="icon">&#128105;</span>
+                            <span>太太信息</span>
+                        </div>
+                        <span class="arrow">&#9660;</span>
+                    </div>
+                    <div class="form-section-content">
+                        <div class="form-group">
+                            <label class="form-label">月收入 (税前, 元)</label>
+                            <input type="number" class="form-input" id="wifeIncome" placeholder="请输入税前月收入" value="12000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">年终奖 (元, 可选)</label>
+                            <input type="number" class="form-input" placeholder="请输入年终奖金额" value="10000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">所在城市类型</label>
+                            <select class="form-select">
+                                <option value="other">其他城市</option>
+                                <option value="tier2" selected>二线城市</option>
+                                <option value="tier1">一线城市 (北上广深)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">个人缴纳社保比例 (%)</label>
+                            <input type="number" class="form-input" value="10.5" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">个人缴纳公积金比例 (%)</label>
+                            <input type="number" class="form-input" value="12" readonly>
+                        </div>
+                         <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="hasCommercialInsurance-wife">
+                                <label for="hasCommercialInsurance-wife">我有符合条件的商业健康保险</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="family-result-card">
+                <div class="family-result-title">家庭预估年纳税情况</div>
+                <div class="member-result">
+                    <div class="member-info husband">
+                        <div class="member-name">先生</div>
+                        <div>应纳税所得额: ¥110,000.00</div>
+                        <div>年纳税额: ¥7,800.00</div>
+                    </div>
+                    <div class="member-info wife">
+                        <div class="member-name">太太</div>
+                        <div>应纳税所得额: ¥70,000.00</div>
+                        <div>年纳税额: ¥3,200.00</div>
+                    </div>
+                </div>
+                <div class="total-tax">
+                    家庭总纳税额: ¥11,000.00
+                </div>
+            </div>
+             <div class="form-section">
+                <div class="form-section-title">
+                    <span class="icon">&#128202;</span>
+                    <span>节税建议</span>
+                </div>
+            <div class="savings-card">
+                <div class="savings-title">通过优化扣除分配，家庭每年可节省</div>
+                <div class="savings-value">¥ 1,500.00</div>
+            </div>
+
+           
+                <div class="form-section-content">
+                   <div class="list-item" onclick="switchTab('deductionPage')">
+                        <div>
+                            <div class="list-item-title">优化专项附加扣除分配</div>
+                            <div class="list-item-value">预计可节税 ¥1,000.00/年</div>
+                        </div>
+                        <div class="list-item-arrow"></div>
+                    </div>
+                    <div class="list-item" onclick="switchTab('pensionPage')">
+                        <div>
+                            <div class="list-item-title">配置个人养老金</div>
+                            <div class="list-item-value">预计可节税 ¥2,400.00/年 (每人12000限额)</div>
+                        </div>
+                        <div class="list-item-arrow"></div>
+                    </div>
+                    <div class="list-item" onclick="switchTab('pensionPage')">
+                        <div>
+                            <div class="list-item-title">购买税优健康险</div>
+                            <div class="list-item-value">预计可节税 ¥1,600.00/年 (每人2400限额)</div>
+                        </div>
+                        <div class="list-item-arrow"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 专项附加扣除分配页 -->
+        <div id="deductionPage" class="page">
+            <form>
+                <div class="form-section" id="housingSection">
+                    <div class="form-section-title collapsed" onclick="toggleSection('housingSection')">
+                        <div>
+                            <span class="icon">&#127968;</span>
+                            <span>住房相关</span>
+                        </div>
+                        <span class="arrow">&#9660;</span>
+                    </div>
+                    <div class="form-section-content">
+                        <div class="deduction-assign">
+                            <div class="deduction-label">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="rent" checked>
+                                    <label for="rent">住房租金</label>
+                                </div>
+                            </div>
+                            <select class="form-select deduction-select">
+                                <option value="husband">先生申报</option>
+                                <option value="wife">太太申报</option>
+                                <option value="split" selected>共同分摊</option>
+                            </select>
+                            <input type="number" class="form-input deduction-input" placeholder="月额" value="1500">
+                        </div>
+                        <div class="split-info">分摊比例: 先生 60%, 太太 40%</div>
+
+                        <div class="deduction-assign">
+                            <div class="deduction-label">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="loan">
+                                    <label for="loan">住房贷款利息</label>
+                                </div>
+                            </div>
+                            <select class="form-select deduction-select">
+                                <option value="husband" selected>先生申报</option>
+                                <option value="wife">太太申报</option>
+                            </select>
+                            <input type="number" class="form-input deduction-input" placeholder="月额" value="1000" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section" id="familyEduSection">
+                    <div class="form-section-title collapsed" onclick="toggleSection('familyEduSection')">
+                       <div>
+                            <span class="icon">&#128106;</span>
+                            <span>家庭与教育</span>
+                        </div>
+                        <span class="arrow">&#9660;</span>
+                    </div>
+                    <div class="form-section-content">
+                        <div class="deduction-assign">
+                            <div class="deduction-label">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="children" checked>
+                                    <label for="children">子女教育</label>
+                                </div>
+                            </div>
+                            <select class="form-select deduction-select">
+                                <option value="husband">先生申报</option>
+                                <option value="wife">太太申报</option>
+                                <option value="split" selected>共同分摊</option>
+                            </select>
+                            <input type="number" class="form-input deduction-input" placeholder="子女数" value="1">
+                        </div>
+                        <div class="split-info">分摊比例: 先生 50%, 太太 50%</div>
+
+                        <div class="deduction-assign">
+                            <div class="deduction-label">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="elder">
+                                    <label for="elder">赡养老人</label>
+                                </div>
+                            </div>
+                            <select class="form-select deduction-select">
+                                <option value="husband">先生申报</option>
+                                <option value="wife">太太申报</option>
+                                <option value="split" selected>共同分摊</option>
+                            </select>
+                            <input type="number" class="form-input deduction-input" placeholder="月额" value="1000">
+                        </div>
+                        <div class="split-info">分摊比例: 先生 70%, 太太 30%</div>
+
+                        <div class="deduction-assign">
+                            <div class="deduction-label">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="continuing">
+                                    <label for="continuing">继续教育</label>
+                                </div>
+                            </div>
+                            <select class="form-select deduction-select" disabled>
+                                <option value="husband">先生申报</option>
+                                <option value="wife" selected>太太申报</option>
+                            </select>
+                            <input type="number" class="form-input deduction-input" placeholder="月额" value="400" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section" id="medicalSection">
+                    <div class="form-section-title collapsed" onclick="toggleSection('medicalSection')">
+                        <div>
+                             <span class="icon">&#128138;</span>
+                            <span>大病医疗</span>
+                        </div>
+                        <span class="arrow">&#9660;</span>
+                    </div>
+                    <div class="form-section-content">
+                        <div class="deduction-assign">
+                            <div class="deduction-label">
+                                <label class="form-label">先生年度自付部分 (元)</label>
+                            </div>
+                            <input type="number" class="form-input deduction-input" placeholder="年度额" value="3000">
+                        </div>
+                        <div class="deduction-assign">
+                            <div class="deduction-label">
+                                <label class="form-label">太太年度自付部分 (元)</label>
+                            </div>
+                            <input type="number" class="form-input deduction-input" placeholder="年度额" value="2000">
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <button class="btn-primary" onclick="switchTab('homePage')">保存并重新计算</button>
+        </div>
+
+        <!-- 个人养老金与税优保险页 -->
+        <div id="pensionPage" class="page">
+             <div class="form-section" id="pensionSection">
+                <div class="form-section-title collapsed" onclick="toggleSection('pensionSection')">
+                    <div>
+                        <span class="icon">&#128184;</span>
+                        <span>个人养老金</span>
+                    </div>
+                    <span class="arrow">&#9660;</span>
+                </div>
+                <div class="form-section-content">
+                     <div class="deduction-assign">
+                        <div class="deduction-label">
+                            <label class="form-label">先生年缴费额 (元)</label>
+                        </div>
+                        <input type="number" class="form-input deduction-input" placeholder="年度额" value="6000">
+                    </div>
+                    <div class="deduction-assign">
+                        <div class="deduction-label">
+                            <label class="form-label">太太年缴费额 (元)</label>
+                        </div>
+                        <input type="number" class="form-input deduction-input" placeholder="年度额" value="6000">
+                    </div>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 10px;">每人每年最高12000元限额。</p>
+                </div>
+            </div>
+
+            <div class="form-section" id="insuranceSection">
+               <div class="form-section-title collapsed" onclick="toggleSection('insuranceSection')">
+                    <div>
+                         <span class="icon">&#128138;</span>
+                        <span>税优健康险</span>
+                    </div>
+                    <span class="arrow">&#9660;</span>
+                </div>
+                <div class="form-section-content">
+                     <div class="deduction-assign">
+                        <div class="deduction-label">
+                            <label class="form-label">先生年缴费额 (元)</label>
+                        </div>
+                        <input type="number" class="form-input deduction-input" placeholder="年度额" value="1200">
+                    </div>
+                    <div class="deduction-assign">
+                        <div class="deduction-label">
+                            <label class="form-label">太太年缴费额 (元)</label>
+                        </div>
+                        <input type="number" class="form-input deduction-input" placeholder="年度额" value="1200">
+                    </div>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 10px;">每人每年最高2400元限额。</p>
+                </div>
+            </div>
+
+            <!-- 咨询顾问模块 -->
+            <div class="consultant-section">
+                <div class="consultant-avatar">&#128100;</div>
+                <div class="consultant-name">张财务</div>
+                <div class="consultant-desc">资深税务规划师，10年个税筹划经验</div>
+                <button class="consult-btn" onclick="alert('正在为您连接顾问...')">立即咨询</button>
+            </div>
+
+            <button class="btn-primary" onclick="switchTab('homePage')">保存并重新计算</button>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <div class="tabbar">
+        <div class="tabbar-item active" onclick="switchTab('homePage')">
+            <span class="icon">&#127968;</span>
+            <span>首页</span>
+        </div>
+        <div class="tabbar-item" onclick="switchTab('deductionPage')">
+            <span class="icon">&#128221;</span>
+            <span>扣除分配</span>
+        </div>
+        <div class="tabbar-item" onclick="switchTab('pensionPage')">
+            <span class="icon">&#128184;</span>
+            <span>养老金/保险</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 切换底部Tab页面
+    function switchTab(tabId) {
+        // 隐藏所有页面
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
+        });
+        // 显示目标页面
+        document.getElementById(tabId).classList.add('active');
+
+        // 更新底部导航栏状态
+        document.querySelectorAll('.tabbar-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        event.currentTarget.classList.add('active');
+    }
+
+    // 弹窗控制
+    function toggleModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+     // 切换信息卡片的展开/收起状态
+    function toggleSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        const title = section.querySelector('.form-section-title');
+        const content = section.querySelector('.form-section-content');
+        
+        title.classList.toggle('collapsed');
+        section.classList.toggle('expanded');
+    }
+
+    // 监听输入框变化，自动展开卡片
+    function setupAutoExpand() {
+        const husbandIncomeInput = document.getElementById('husbandIncome');
+        const wifeIncomeInput = document.getElementById('wifeIncome');
+
+        if (husbandIncomeInput) {
+            husbandIncomeInput.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    const section = document.getElementById('husbandSection');
+                    section.classList.add('expanded');
+                    section.querySelector('.form-section-title').classList.remove('collapsed');
+                }
+            });
+        }
+
+        if (wifeIncomeInput) {
+            wifeIncomeInput.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    const section = document.getElementById('wifeSection');
+                    section.classList.add('expanded');
+                    section.querySelector('.form-section-title').classList.remove('collapsed');
+                }
+            });
+        }
+    }
+
+    // 页面加载完成后，确保首页显示并设置自动展开
+    document.addEventListener('DOMContentLoaded', function() {
+        switchTab('homePage');
+        setupAutoExpand();
+    });
+
+</script>
+
+</body>
+</html>
